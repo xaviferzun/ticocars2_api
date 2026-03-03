@@ -1,8 +1,10 @@
 const express = require("express");
 const app = express();
+const cors = require("cors");
 
 //Middleware global
 app.use(express.json());
+app.use(cors());
 
 //Here import the auth routes 
 const authRoutes = require("./routes/authRoutes");
