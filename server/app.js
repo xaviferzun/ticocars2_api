@@ -9,6 +9,9 @@ app.use(cors());
 //Here import the auth routes 
 const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes);
+//Here import the vehicle routes
+const vehicleRoutes = require("./routes/vehicleRoutes");
+app.use("/api/vehicles", vehicleRoutes);
 
 //Ruta base para probar que el servidor funcione
 app.get("/", (req, res) => {
