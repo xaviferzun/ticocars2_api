@@ -108,5 +108,59 @@ router.patch("/:id/sold", authenticate, ownerMiddleware, async (req, res) => {
   }
 });
 
+
+//Here I define the route to get vehicles with filters. Successfuly tested on Postman
+router.get("/", async (req, res) => {
+  try {
+    //Read query parameters
+    const { brand, model, minYear, maxYear, minPrice, maxPrice, status } = req.query;
+    //Make object
+    const filters = {};
+
+    //Filters
+    if (brand) {
+      filters.brand = brand;
+    }
+    if (model) {
+      filters.model = model;
+    }
+    if (status) {
+      filters.status = status;
+    }
+    if (minYear || maxYear) {
+      filters.year = {};
+      if (minYear) {
+        filters.year.$gte = Number(minYear);
+      }
+      if (maxYear) {
+        filters.year.$lte = Number(maxYear);
+      }
+    }
+    if (minPrice || maxPrice) {
+      filters.price = {};
+      if (minPrice) {
+        filters.price.$gte = Number(minPrice);
+      }
+      if (maxPrice) {
+        filters.price.$lte = Number(maxPrice);
+      }
+    }
+
+    //Execute query in mongo
+    const vehicles = await Vehicle.find(filters);
+    //Return result
+    res.json({
+      total: vehicles.length,
+      vehicles: vehicles
+    });
+  } 
+    catch (error) {
+      res.status(500).json({
+        message: "Error al recuperar los vehículos",
+        error: error.message
+    });
+  }
+});
+
 //Export the vehicle routes
 module.exports = router;
