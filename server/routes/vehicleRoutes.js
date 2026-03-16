@@ -65,7 +65,7 @@ router.delete("/:id/sold", async (req, res) => {
     const vehicle = await Vehicle.findById(req.params.id);
     if (!vehicle) {
       return res.status(404).json({
-        message: "Vehículo no encontrado"
+        message: "Vehículo no encontrado "
       });
     }
     vehicle.status = "sold";
@@ -82,6 +82,8 @@ router.delete("/:id/sold", async (req, res) => {
     });
   }
 });
+
+
 
 //Export the vehicle routes
 module.exports = router;
