@@ -4,7 +4,7 @@ const Vehicle = require("../models/Vehicle");
 const authenticate = require("../middlewares/authMiddleware");
 const ownerMiddleware = require("../middlewares/ownerMiddleware");
 
-//Here I define the route for the POST endpoint to create a new vehicle.
+//KAN-24 Here I define the route for the POST endpoint to create a new vehicle.
 router.post("/", authenticate, async (req, res) => {
   try {
     const vehicle = new Vehicle({...req.body, owner: req.user.id});
@@ -19,7 +19,7 @@ router.post("/", authenticate, async (req, res) => {
   }
 });
 
-//Here I define the route to get a vehicle by its ID
+//KAN-25 Here I define the route to get a vehicle by its ID
 router.get("/:id", async (req, res) => {
   try {
     const vehicle = await Vehicle.findById(req.params.id);
@@ -38,7 +38,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-//Here I define the route to update a vehicle by its ID
+//KAN-26 Here I define the route to update a vehicle by its ID
 router.put("/:id", authenticate, ownerMiddleware, async (req, res) => {
   try {
     const updVehicle = await Vehicle.findByIdAndUpdate(
@@ -61,7 +61,7 @@ router.put("/:id", authenticate, ownerMiddleware, async (req, res) => {
   }
 });
 
-//Here I define the route to delete a vehicle by ID
+//KAN-27 Here I define the route to delete a vehicle by ID
 router.delete("/:id", authenticate, ownerMiddleware, async (req, res) => {
   try {
     const deleteVehicle = await Vehicle.findByIdAndDelete(req.params.id);
@@ -84,7 +84,7 @@ router.delete("/:id", authenticate, ownerMiddleware, async (req, res) => {
 });
 
 
-//Here I define the route to update the vehicle status to sold
+//KAN-28 Here I define the route to update the vehicle status to sold
 router.patch("/:id/sold", authenticate, ownerMiddleware, async (req, res) => {
   try {
     const vehicle = await Vehicle.findById(req.params.id);
@@ -109,12 +109,17 @@ router.patch("/:id/sold", authenticate, ownerMiddleware, async (req, res) => {
 });
 
 
-//Here I define the route to get vehicles with filters. Successfuly tested on Postman
+//KAN-30/31 Here I define the route to get vehicles with filters and pagination
 router.get("/", async (req, res) => {
   try {
     //Read query parameters
     const { brand, model, minYear, maxYear, minPrice, maxPrice, status } = req.query;
-    //Make object
+    //Pagination parameters with default values
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
+
+    //Calculate amount of documents to skip
+    const skip = (page - 1) * limit;
     const filters = {};
 
     //Filters
@@ -145,23 +150,31 @@ router.get("/", async (req, res) => {
         filters.price.$lte = Number(maxPrice);
       }
     }
-
-    //Execute query in mongo
-    const vehicles = await Vehicle.find(filters);
-    //Return result
+    //Count total results for pagination
+    const totalResults = await Vehicle.countDocuments(filters);
+    //Execute the paginated query
+    const vehicles = await Vehicle.find(filters)
+      .sort({ createdAt: -1 }) //date order -1 new first
+      .skip(skip)
+      .limit(limit);
+    //Calculate total pages
+    const totalPages = Math.ceil(totalResults / limit);
+    //Response
     res.json({
-      total: vehicles.length,
-      vehicles: vehicles
+      totalResults,
+      currentPage: page,
+      totalPages,
+      limit,
+      results: vehicles
     });
   } 
     catch (error) {
       res.status(500).json({
-        message: "Error al recuperar los vehículos",
+        message: "Error al obtener los vehículos",
         error: error.message
     });
   }
 });
-
 
 //Export the vehicle routes
 module.exports = router;
