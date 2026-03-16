@@ -4,7 +4,7 @@ const Vehicle = require("../models/Vehicle");
 const authenticate = require("../middlewares/authMiddleware");
 const ownerMiddleware = require("../middlewares/ownerMiddleware");
 
-//Here I define the route for the POST endpoint to create a new vehicle.
+//KAN-24 Here I define the route for the POST endpoint to create a new vehicle.
 router.post("/", authenticate, async (req, res) => {
   try {
     const vehicle = new Vehicle({...req.body, owner: req.user.id});
@@ -19,7 +19,7 @@ router.post("/", authenticate, async (req, res) => {
   }
 });
 
-//Here I define the route to get a vehicle by its ID
+//KAN-25 Here I define the route to get a vehicle by its ID
 router.get("/:id", async (req, res) => {
   try {
     const vehicle = await Vehicle.findById(req.params.id);
@@ -38,7 +38,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-//Here I define the route to update a vehicle by its ID
+//KAN-26 Here I define the route to update a vehicle by its ID
 router.put("/:id", authenticate, ownerMiddleware, async (req, res) => {
   try {
     const updVehicle = await Vehicle.findByIdAndUpdate(
@@ -61,7 +61,7 @@ router.put("/:id", authenticate, ownerMiddleware, async (req, res) => {
   }
 });
 
-//Here I define the route to delete a vehicle by ID
+//KAN-27 Here I define the route to delete a vehicle by ID
 router.delete("/:id", authenticate, ownerMiddleware, async (req, res) => {
   try {
     const deleteVehicle = await Vehicle.findByIdAndDelete(req.params.id);
@@ -84,7 +84,7 @@ router.delete("/:id", authenticate, ownerMiddleware, async (req, res) => {
 });
 
 
-//Here I define the route to update the vehicle status to sold
+//KAN-28 Here I define the route to update the vehicle status to sold
 router.patch("/:id/sold", authenticate, ownerMiddleware, async (req, res) => {
   try {
     const vehicle = await Vehicle.findById(req.params.id);
@@ -109,7 +109,7 @@ router.patch("/:id/sold", authenticate, ownerMiddleware, async (req, res) => {
 });
 
 
-//Here I define the route to get vehicles with filters. Successfuly tested on Postman
+//KAN-30 Here I define the route to get vehicles with filters. Successfuly tested on Postman
 router.get("/", async (req, res) => {
   try {
     //Read query parameters
@@ -162,6 +162,9 @@ router.get("/", async (req, res) => {
   }
 });
 
+//KAN-31 Get vehicles with filters and pagination
+router.get("/", async (req, res) => {
+});
 
 //Export the vehicle routes
 module.exports = router;
