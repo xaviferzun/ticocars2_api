@@ -154,6 +154,7 @@ router.get("/", async (req, res) => {
     const totalResults = await Vehicle.countDocuments(filters);
     //Execute the paginated query
     const vehicles = await Vehicle.find(filters)
+      .sort({ createdAt: -1 }) //date order -1 new first
       .skip(skip)
       .limit(limit);
     //Calculate total pages
