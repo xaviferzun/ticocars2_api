@@ -59,13 +59,36 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-//Here I define the route to mark a vehicle as sold 
-router.delete("/:id/sold", async (req, res) => {
+//Here I define the route to delete a vehicle by ID
+router.delete("/:id", async (req, res) => {
+  try {
+    const deleteVehicle = await Vehicle.findByIdAndDelete(req.params.id);
+    if (!deleteVehicle) {
+      return res.status(404).json({
+        message: "Vehículo no encontrado"
+      });
+    }
+    res.json({
+      message: "Vehículo eliminado correctamente",
+      vehicle: deleteVehicle
+    });
+  } 
+    catch (error) {
+      res.status(500).json({
+        message: "Error al eliminar el vehículo",
+        error: error.message
+    });
+  }
+});
+
+
+//Here I define the route to update the vehicle status to sold
+router.patch("/:id/sold", async (req, res) => {
   try {
     const vehicle = await Vehicle.findById(req.params.id);
     if (!vehicle) {
       return res.status(404).json({
-        message: "Vehículo no encontrado "
+        message: "Vehículo no encontrado"
       });
     }
     vehicle.status = "sold";
@@ -82,8 +105,6 @@ router.delete("/:id/sold", async (req, res) => {
     });
   }
 });
-
-
 
 //Export the vehicle routes
 module.exports = router;
