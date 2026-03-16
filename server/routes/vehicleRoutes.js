@@ -162,5 +162,6 @@ router.get("/", async (req, res) => {
   }
 });
 
+
 //Export the vehicle routes
 module.exports = router;
