@@ -1,11 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const Vehicle = require("../models/Vehicle");
+const authenticate = require("../middlewares/authMiddleware");
+const ownerMiddleware = require("../middlewares/ownerMiddleware");
 
 //Here I define the route for the POST endpoint to create a new vehicle.
-router.post("/", async (req, res) => {
+router.post("/", authenticate, async (req, res) => {
   try {
-    const vehicle = new Vehicle(req.body);
+    const vehicle = new Vehicle({...req.body, owner: req.user.id});
     const savedVehicle = await vehicle.save();
     res.status(201).json(savedVehicle);
   } 
@@ -37,7 +39,7 @@ router.get("/:id", async (req, res) => {
 });
 
 //Here I define the route to update a vehicle by its ID
-router.put("/:id", async (req, res) => {
+router.put("/:id", authenticate, ownerMiddleware, async (req, res) => {
   try {
     const updVehicle = await Vehicle.findByIdAndUpdate(
       req.params.id,
@@ -60,7 +62,7 @@ router.put("/:id", async (req, res) => {
 });
 
 //Here I define the route to delete a vehicle by ID
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authenticate, ownerMiddleware, async (req, res) => {
   try {
     const deleteVehicle = await Vehicle.findByIdAndDelete(req.params.id);
     if (!deleteVehicle) {
@@ -83,7 +85,7 @@ router.delete("/:id", async (req, res) => {
 
 
 //Here I define the route to update the vehicle status to sold
-router.patch("/:id/sold", async (req, res) => {
+router.patch("/:id/sold", authenticate, ownerMiddleware, async (req, res) => {
   try {
     const vehicle = await Vehicle.findById(req.params.id);
     if (!vehicle) {
