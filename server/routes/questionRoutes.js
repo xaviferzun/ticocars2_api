@@ -4,7 +4,7 @@ const Question = require("../models/Question");
 const Vehicle = require("../models/Vehicle");
 const authenticate = require("../middlewares/authMiddleware");
 
-//KAN-35 Here I define the route for the POST endpoint to create a new question related to a vehicle. The user must be authenticated to ask a question.
+//KAN-35 Here I define the route for the POST endpoint to create a new question related to a vehicle.The user must be authenticated to ask a question.
 router.post("/", authenticate, async (req, res) => {
   try {
     const { vehicleId, text } = req.body;
