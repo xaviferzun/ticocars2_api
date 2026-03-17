@@ -41,4 +41,20 @@ router.post("/", authenticate, async (req, res) => {
   }
 });
 
+//KAN-38 Here I define the route to get all questions related to a vehicle by its ID. This endpoint is public, no authentication is required.
+router.get("/mine", authenticate, async (req, res) => {
+  try {
+    //Find all questions where user = logged user
+    const questions = await Question.find({
+      user: req.user.id,
+    }).populate("vehicle");
+    return res.json(questions);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error del servidor",
+      error: error.message,
+    });
+  }
+});
+
 module.exports = router;
