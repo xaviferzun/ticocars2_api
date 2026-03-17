@@ -57,4 +57,28 @@ router.get("/mine", authenticate, async (req, res) => {
   }
 });
 
+//KAN-39 Here I define the route to get all questions related to the vehicles owned by the logged user. The user must be authenticated to access this endpoint.
+router.get("/owner", authenticate, async (req, res) => {
+  try {
+    //Find vehicles owned by the user
+    const vehicles = await Vehicle.find({
+      owner: req.user.id,
+    });
+
+    //Extract vehicle IDs
+    const vehicleIds = vehicles.map((vehicle) => vehicle._id);
+    //Find questions related to those vehicles
+    const questions = await Question.find({
+      vehicle: { $in: vehicleIds },
+    })
+      .populate("user")     //Asker
+      .populate("vehicle"); //Vehicle info
+    return res.json(questions);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error del servidor",
+      error: error.message,
+    });
+  }
+});
 module.exports = router;
