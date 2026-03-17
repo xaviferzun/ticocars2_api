@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Question = require("../models/Question");
+const Answer = require("../models/Answer");
 const Vehicle = require("../models/Vehicle");
 const authenticate = require("../middlewares/authMiddleware");
 
@@ -21,6 +22,23 @@ router.post("/", authenticate, async (req, res) => {
       return res.status(404).json({
         message: "Vehículo no encontrado",
       });
+    }
+
+    //Check if user already has a pending question 
+    const existingQuestion = await Question.findOne({
+      user: req.user.id,
+      vehicle: vehicleId,
+    });
+    if (existingQuestion) {
+      const Answer = require("../models/Answer"); //import here if not at top
+      const existingAnswer = await Answer.findOne({
+        question: existingQuestion._id,
+    });
+    if (!existingAnswer) {
+        return res.status(400).json({
+        message: "Debes esperar a que respondan tu pregunta anterior",
+        });
+    }
     }
 
     //Create new question

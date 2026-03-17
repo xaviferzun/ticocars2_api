@@ -23,6 +23,15 @@ router.post("/", authMiddleware, async (req, res) => {
         message: "Pregunta no encontrada",
       });
     }
+    //Check if question already has an answer
+    const existingAnswer = await Answer.findOne({
+      question: questionId,
+    });
+    if (existingAnswer) {
+      return res.status(400).json({
+          message: "Esta pregunta ya fue respondida",
+      });
+    }
     //Get vehicle related to the question
     const vehicle = await Vehicle.findById(question.vehicle);
     if (!vehicle) {
