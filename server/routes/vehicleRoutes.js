@@ -113,7 +113,7 @@ router.patch("/:id/sold", authenticate, ownerMiddleware, async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     //Read query parameters
-    const { brand, model, minYear, maxYear, minPrice, maxPrice, status } = req.query;
+    const {brand, model, yearMin, yearMax, priceMin, priceMax, status} = req.query;
     //Pagination parameters with default values
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 5;
@@ -123,31 +123,32 @@ router.get("/", async (req, res) => {
     const filters = {};
 
     //Filters
-    if (brand) {
-      filters.brand = brand;
+    if (brand && brand.trim() !== "") {
+      filters.brand = { $regex: brand, $options: "i"}; //Case-insensitive regex search
     }
-    if (model) {
-      filters.model = model;
+
+    if (model && model.trim() !== "") {
+      filters.model = { $regex: model, $options: "i"}; //Case-insensitive regex search
     }
     if (status) {
       filters.status = status;
     }
-    if (minYear || maxYear) {
+    if (yearMin || yearMax) {
       filters.year = {};
-      if (minYear) {
-        filters.year.$gte = Number(minYear);
+      if (yearMin) {
+        filters.year.$gte = Number(yearMin);
       }
-      if (maxYear) {
-        filters.year.$lte = Number(maxYear);
+      if (yearMax) {
+        filters.year.$lte = Number(yearMax);
       }
     }
-    if (minPrice || maxPrice) {
+    if (priceMin || priceMax) {
       filters.price = {};
-      if (minPrice) {
-        filters.price.$gte = Number(minPrice);
+      if (priceMin) {
+        filters.price.$gte = Number(priceMin);
       }
-      if (maxPrice) {
-        filters.price.$lte = Number(maxPrice);
+      if (priceMax) {
+        filters.price.$lte = Number(priceMax);
       }
     }
     //Count total results for pagination
