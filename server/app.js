@@ -15,8 +15,11 @@ app.use("/api/vehicles", vehicleRoutes);
 //Here import the question routes
 const questionRoutes = require("./routes/questionRoutes");
 app.use("/api/questions", questionRoutes);
+//Here import the answer routes
+const answerRoutes = require("./routes/answerRoutes");
+app.use("/api/answers", answerRoutes);
 
-//Ruta base para probar que el servidor funcione
+//Base route to check the API is running
 app.get("/", (req, res) => {
   res.json({ message: "TicoCars-API corriendo correctamente" });
 });
