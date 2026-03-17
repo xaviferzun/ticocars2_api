@@ -19,6 +19,19 @@ router.post("/", authenticate, async (req, res) => {
   }
 });
 
+//KAN-42 Get vehicles of authenticated user
+router.get("/mine", authenticate, async (req, res) => {
+  try {
+    const vehicles = await Vehicle.find({ owner: req.user.id });
+    res.json(vehicles);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al obtener tus vehículos",
+      error: error.message,
+    });
+  }
+});
+
 //KAN-25 Here I define the route to get a vehicle by its ID
 router.get("/:id", async (req, res) => {
   try {
