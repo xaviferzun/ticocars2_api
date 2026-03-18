@@ -1,10 +1,14 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const path = require("path");
 
 //Middleware global
 app.use(express.json());
 app.use(cors());
+
+//KAN-43 Serve uploaded images as static files
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 //Here import the auth routes 
 const authRoutes = require("./routes/authRoutes");
