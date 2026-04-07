@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-//Here I defiine the user schema with username, email and password.
+//User schema 
 const userSchema = new mongoose.Schema(
   {
     username: {
@@ -12,21 +12,49 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique: true, 
+      unique: true,
       trim: true,
       lowercase: true,
     },
 
     password: {
       type: String,
-      required: true,
+      //Not required for google users
+      required: false,
+    },
+
+    cedula: {
+      type: String,
+      trim: true,
+    },
+
+    firstName: {
+      type: String,
+      trim: true,
+    },
+
+    lastName: {
+      type: String,
+      trim: true,
+    },
+
+    //Indicates if the user registered with email/password or Google
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+
+    //Account status, pending until email is verified
+    status: {
+      type: String,
+      enum: ["pending", "active"],
+      default: "active",
     },
   },
   {
-    //Used to add createdAt and updatedAt fields
     timestamps: true,
   }
 );
 
-//Export the model
 module.exports = mongoose.model("User", userSchema);
