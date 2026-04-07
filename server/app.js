@@ -2,15 +2,19 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const path = require("path");
+const passport = require("./config/passportConfig");
 
 //Middleware global
 app.use(express.json());
 app.use(cors());
 
+//Initialize passport for Google OAuth2
+app.use(passport.initialize());
+
 //KAN-43 Serve uploaded images as static files
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-//Here import the auth routes 
+//Here import the auth routes
 const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes);
 //Here import the vehicle routes
