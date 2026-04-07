@@ -136,7 +136,41 @@ const loginUser = async (req, res) => {
   }
 };
 
+
+//GET /api/auth/validate-cedula endpoint to check a cedula against the padron API
+const validateCedula = async (req, res) => {
+  try {
+    const { cedula } = req.query;
+
+    //Validate that cedula is present
+    if (!cedula) {
+      return res.status(400).json({ message: "La cédula es requerida." });
+    }
+
+    //Validate cedula format, must be 9 digits
+    if (!/^\d{9}$/.test(cedula)) {
+      return res.status(400).json({ message: "La cédula debe tener 9 dígitos." });
+    }
+
+    //Check cedula against the padron API
+    const padronData = await checkCedula(cedula);
+
+    if (!padronData || padronData[0] === "No encontrado") {
+      return res.status(404).json({ message: "La cédula no existe en el padrón electoral." });
+    }
+
+    //Return the padron data to autocomplete the form
+    res.status(200).json(padronData);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error del servidor." });
+  }
+};
+
+
 module.exports = {
   registerUser,
   loginUser,
+  validateCedula,
 };
