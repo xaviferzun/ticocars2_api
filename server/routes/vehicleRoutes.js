@@ -29,7 +29,7 @@ router.post("/", authenticate, upload.single("image"), async (req, res) => {
 //KAN-42 Get vehicles of authenticated user
 router.get("/mine", authenticate, async (req, res) => {
   try {
-    const vehicles = await Vehicle.find({ owner: req.user.id });
+    const vehicles = await Vehicle.find({owner: req.user.id});
     res.json(vehicles);
   } catch (error) {
     res.status(500).json({
@@ -44,7 +44,7 @@ router.get("/:id", async (req, res) => {
   try {
     const vehicle = await Vehicle.findById(req.params.id);
     if (!vehicle) {
-      return res.status(404).json({ message: "Vehículo no encontrado" });
+      return res.status(404).json({ message: "Vehículo no encontrado"});
     }
     res.json(vehicle);
   } catch (error) {
@@ -72,7 +72,7 @@ router.put("/:id", authenticate, ownerMiddleware, upload.single("image"), async 
       { new: true }
     );
     if (!updVehicle) {
-      return res.status(404).json({ message: "Vehículo no encontrado" });
+      return res.status(404).json({ message: "Vehículo no encontrado"});
     }
     res.json(updVehicle);
   } catch (error) {
@@ -88,7 +88,7 @@ router.delete("/:id", authenticate, ownerMiddleware, async (req, res) => {
   try {
     const deleteVehicle = await Vehicle.findByIdAndDelete(req.params.id);
     if (!deleteVehicle) {
-      return res.status(404).json({ message: "Vehículo no encontrado" });
+      return res.status(404).json({ message: "Vehículo no encontrado"});
     }
     res.json({
       message: "Vehículo eliminado correctamente",
@@ -107,11 +107,11 @@ router.patch("/:id/sold", authenticate, ownerMiddleware, async (req, res) => {
   try {
     const vehicle = await Vehicle.findById(req.params.id);
     if (!vehicle) {
-      return res.status(404).json({ message: "Vehículo no encontrado" });
+      return res.status(404).json({message: "Vehículo no encontrado"});
     }
     vehicle.status = "sold";
     await vehicle.save();
-    res.json({ message: "Vehículo marcado como vendido", vehicle });
+    res.json({message: "Vehículo marcado como vendido", vehicle});
   } catch (error) {
     res.status(500).json({
       message: "Error al marcar el vehículo como vendido",
@@ -123,14 +123,14 @@ router.patch("/:id/sold", authenticate, ownerMiddleware, async (req, res) => {
 //KAN-30/31 Here I define the route to get vehicles with filters and pagination
 router.get("/", async (req, res) => {
   try {
-    const { brand, model, yearMin, yearMax, priceMin, priceMax, status } = req.query;
+    const {brand, model, yearMin, yearMax, priceMin, priceMax, status} = req.query;
     const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 5;
+    const limit = Number(req.query.limit) || 50; //cambio, decir al profe
     const skip = (page - 1) * limit;
     const filters = {};
 
-    if (brand && brand.trim() !== "") filters.brand = { $regex: brand, $options: "i" };
-    if (model && model.trim() !== "") filters.model = { $regex: model, $options: "i" };
+    if (brand && brand.trim() !== "") filters.brand = {$regex: brand, $options: "i"};
+    if (model && model.trim() !== "") filters.model = {$regex: model, $options: "i"};
     if (status) filters.status = status;
     if (yearMin || yearMax) {
       filters.year = {};
@@ -146,13 +146,13 @@ router.get("/", async (req, res) => {
     //Get total count for pagination
     const totalResults = await Vehicle.countDocuments(filters);
     const vehicles = await Vehicle.find(filters)
-      .sort({ createdAt: -1 })
+      .sort({createdAt: -1})
       .skip(skip)
       .limit(limit);
     const totalPages = Math.ceil(totalResults / limit);
 
     //Return results with pagination info
-    res.json({ totalResults, currentPage: page, totalPages, limit, results: vehicles });
+    res.json({totalResults, currentPage: page, totalPages, limit, results: vehicles});
   } catch (error) {
     res.status(500).json({
       message: "Error al obtener los vehículos",
