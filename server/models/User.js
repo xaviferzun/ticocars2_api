@@ -45,12 +45,12 @@ const userSchema = new mongoose.Schema(
       default: "local",
     },
 
-    //Account status, pending until email is verified
-    status: {
-      type: String,
-      enum: ["pending", "active"],
-      default: "active",
-    },
+  //Account status, pending until email is verified
+  status: {
+    type: String,
+    enum: ["pending", "active"],
+    default: "pending",
+  },
   },
   {
     timestamps: true,
