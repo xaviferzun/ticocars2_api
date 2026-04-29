@@ -2,6 +2,10 @@ const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
+const sgMail = require("@sendgrid/mail");
+
+//Configure SendGrid with the API key
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 //URL of the padron API running locally
 const PADRON_URL = process.env.PADRON_URL || "http://localhost:8080";
@@ -14,6 +18,28 @@ const checkCedula = async (cedula) => {
   } catch (error) {
     return null;
   }
+};
+
+//feature/KAN-61 Helper function to send activation email via SendGrid
+const sendActivationEmail = async (email, firstName, activationToken) => {
+  const activationLink = `${process.env.CLIENT_URL}/activate?token=${activationToken}`;
+
+  const msg = {
+    to: email,
+    from: process.env.SENDGRID_FROM,
+    subject: "Activa tu cuenta en TicoCars",
+    html: `
+      <h2>Hola, ${firstName}!</h2>
+      <p>Gracias por registrarte en TicoCars. Para activar tu cuenta haz clic en el siguiente enlace:</p>
+      <a href="${activationLink}" style="background-color:#2563eb;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;">
+        Activar cuenta
+      </a>
+      <p>Este enlace expira en 24 horas.</p>
+      <p>Si no creaste esta cuenta, ignora este correo.</p>
+    `,
+  };
+
+  await sgMail.send(msg);
 };
 
 //POST /api/auth/register endpoint to register a new user
@@ -64,6 +90,13 @@ const registerUser = async (req, res) => {
     const hashComplex = 8;
     const hashPassword = await bcrypt.hash(password, hashComplex);
 
+    //feature/KAN-61 Generate a unique activation token that expires in 24 hours
+    const activationToken = jwt.sign(
+      { email },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
     //Create the user with the padron data to autocomplete name fields
     const createUser = await User.create({
       username,
@@ -73,11 +106,16 @@ const registerUser = async (req, res) => {
       firstName: padronData.nombre || "",
       lastName: `${padronData.apellidoPaterno || ""} ${padronData.apellidoMaterno || ""}`.trim(),
       authProvider: "local",
+      //feature/KAN-61 Store activation token to verify later
+      activationToken,
     });
+
+    //feature/KAN-61 Send activation email via SendGrid
+    await sendActivationEmail(createUser.email, createUser.firstName, activationToken);
 
     //Send response without password
     res.status(201).json({
-      message: "Usuario registrado exitosamente en TicoCars.",
+      message: "Usuario registrado. Revisa tu correo para activar tu cuenta.",
       user: {
         id: createUser._id,
         username: createUser.username,
@@ -136,7 +174,6 @@ const loginUser = async (req, res) => {
   }
 };
 
-
 //GET /api/auth/validate-cedula endpoint to check a cedula against the padron API
 const validateCedula = async (req, res) => {
   try {
@@ -168,9 +205,41 @@ const validateCedula = async (req, res) => {
   }
 };
 
+//KAN-61 GET /api/auth/activate endpoint to activate a user account
+const activateAccount = async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ message: "Token de activación requerido." });
+    }
+
+    //Verify the activation token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    //Find the user by email and activation token
+    const user = await User.findOne({ email: decoded.email, activationToken: token });
+
+    if (!user) {
+      return res.status(400).json({ message: "Token de activación inválido o ya fue usado." });
+    }
+
+    //Activate the account and remove the activation token
+    user.status = "active";
+    user.activationToken = null;
+    await user.save();
+
+    res.status(200).json({ message: "Cuenta activada exitosamente. Ya puedes iniciar sesión." });
+
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ message: "Token inválido o vencido." });
+  }
+};
 
 module.exports = {
   registerUser,
   loginUser,
   validateCedula,
+  activateAccount,
 };
