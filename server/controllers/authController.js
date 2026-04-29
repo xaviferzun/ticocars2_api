@@ -162,10 +162,12 @@ const loginUser = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    //Send the token on response
+    //Send the token and username on response
     res.status(200).json({
       message: "Login exitoso. Bienvenido a TicoCars.",
       token,
+      //KAN-62 Include username to navbar
+      username: existUser.username,
     });
 
   } catch (error) {
