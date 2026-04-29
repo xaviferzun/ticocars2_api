@@ -45,12 +45,18 @@ const userSchema = new mongoose.Schema(
       default: "local",
     },
 
-  //Account status, pending until email is verified
-  status: {
-    type: String,
-    enum: ["pending", "active"],
-    default: "pending",
-  },
+    //Account status, pending until email is verified
+    status: {
+      type: String,
+      enum: ["pending", "active"],
+      default: "pending",
+    },
+
+    //KAN-61 Token used to activate the account via email
+    activationToken: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

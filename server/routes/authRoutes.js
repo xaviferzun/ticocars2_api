@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {registerUser, loginUser, validateCedula} = require("../controllers/authController");
+const { registerUser, loginUser, validateCedula, activateAccount } = require("../controllers/authController");
 const authenticate = require("../middlewares/authMiddleware");
 const passport = require("../config/passportConfig");
 const jwt = require("jsonwebtoken");
@@ -9,6 +9,9 @@ const jwt = require("jsonwebtoken");
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/validate-cedula", validateCedula);
+
+//KAN-61 Route to activate account via email link
+router.get("/activate", activateAccount);
 
 //Route to start Google OAuth2 flow, requests email and profile data
 router.get("/google", passport.authenticate("google", { scope: ["email", "profile"], session: false }));
@@ -30,7 +33,7 @@ router.get("/google/callback",
 );
 
 router.get("/profile", authenticate, (req, res) => {
-  res.json({message: "Access granted", user: req.user});
+  res.json({ message: "Access granted", user: req.user });
 });
 
 module.exports = router;
