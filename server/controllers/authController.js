@@ -3,6 +3,8 @@ const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const sgMail = require("@sendgrid/mail");
+const twilio = require("twilio");
+const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 //Configure SendGrid with the API key
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -155,19 +157,18 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Credenciales inválidas." });
     }
 
-    //Create the JWT token with the user id, expires in 1 hour
-    const token = jwt.sign(
-      { id: existUser._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    //KAN-64 Send SMS verification code via twilio
+    await twilioClient.verify.v2
+      .services(process.env.TWILIO_VERIFY_SID)
+      .verifications.create({
+        to: `+506${existUser.phone}`,
+        channel: "sms",
+      });
 
-    //Send the token and username on response
+    //Return user id so frontend can send it back when verifying the code
     res.status(200).json({
-      message: "Login exitoso. Bienvenido a TicoCars.",
-      token,
-      //KAN-62 Include username to navbar
-      username: existUser.username,
+      message: "Código de verificación enviado a tu teléfono.",
+      userId: existUser._id,
     });
 
   } catch (error) {
