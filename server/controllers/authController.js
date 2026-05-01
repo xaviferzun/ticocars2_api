@@ -162,10 +162,12 @@ const loginUser = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    //Send the token on response
+    //Send the token and username on response
     res.status(200).json({
       message: "Login exitoso. Bienvenido a TicoCars.",
       token,
+      //KAN-62 Include username to navbar
+      username: existUser.username,
     });
 
   } catch (error) {
@@ -217,11 +219,16 @@ const activateAccount = async (req, res) => {
     //Verify the activation token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    //Find the user by email and activation token
-    const user = await User.findOne({ email: decoded.email, activationToken: token });
+    //Find user by email from the token
+    const user = await User.findOne({ email: decoded.email });
 
     if (!user) {
-      return res.status(400).json({ message: "Token de activación inválido o ya fue usado." });
+      return res.status(400).json({ message: "Usuario no encontrado." });
+    }
+
+    //Confirm it if the account is active
+    if (user.status === "active") {
+      return res.status(200).json({ message: "Cuenta activada exitosamente. Ya puedes iniciar sesión." });
     }
 
     //Activate the account and remove the activation token
