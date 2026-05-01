@@ -42,7 +42,7 @@ router.get("/mine", authenticate, async (req, res) => {
 //KAN-25 Here I define the route to get a vehicle by its ID
 router.get("/:id", async (req, res) => {
   try {
-    const vehicle = await Vehicle.findById(req.params.id);
+    const vehicle = await Vehicle.findById(req.params.id).populate("owner", "username email"); //KAN-62 Populate owner username y email
     if (!vehicle) {
       return res.status(404).json({ message: "Vehículo no encontrado"});
     }
@@ -148,7 +148,8 @@ router.get("/", async (req, res) => {
     const vehicles = await Vehicle.find(filters)
       .sort({createdAt: -1})
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .populate("owner", "username"); //KAN-62 Populate owner username to displau it on card
     const totalPages = Math.ceil(totalResults / limit);
 
     //Return results with pagination info
