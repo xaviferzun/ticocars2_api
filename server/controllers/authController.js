@@ -47,12 +47,12 @@ const sendActivationEmail = async (email, firstName, activationToken) => {
 //POST /api/auth/register endpoint to register a new user
 const registerUser = async (req, res) => {
   try {
-    const { username, email, password, cedula } = req.body;
+    const {username, email, password, cedula, phone} = req.body;
 
     //Validate that all fields are present including cedula
-    if (!username || !email || !password || !cedula) {
+    if (!username || !email || !password || !cedula || !phone) {
       return res.status(400).json({
-        message: "Todos los campos son requeridos, incluyendo la cédula.",
+        message: "Todos los campos son requeridos.",
       });
     }
 
@@ -108,8 +108,9 @@ const registerUser = async (req, res) => {
       firstName: padronData.nombre || "",
       lastName: `${padronData.apellidoPaterno || ""} ${padronData.apellidoMaterno || ""}`.trim(),
       authProvider: "local",
-      //feature/KAN-61 Store activation token to verify later
+      //KAN-61 Store activation token to verify later
       activationToken,
+      phone: req.body.phone,
     });
 
     //feature/KAN-61 Send activation email via SendGrid
@@ -165,7 +166,7 @@ const loginUser = async (req, res) => {
         channel: "sms",
       });
 
-    //Return user id so frontend can send it back when verifying the code
+    //KAN-64 Return user id so frontend can send it back when verifying the code
     res.status(200).json({
       message: "Código de verificación enviado a tu teléfono.",
       userId: existUser._id,
@@ -245,9 +246,53 @@ const activateAccount = async (req, res) => {
   }
 };
 
+
+//KAN-64 POST /api/auth/verify-2fa endpoint to verify the SMS code and return the JWT
+const verify2FA = async (req, res) => {
+  try {
+    const { userId, code } = req.body;
+    if (!userId || !code) {
+      return res.status(400).json({ message: "El usuario y codigo son requeridos." });
+    }
+
+    //Find usr
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado." });
+    }
+
+    //Verify the code with twilio verification
+    const result = await twilioClient.verify.v2
+      .services(process.env.TWILIO_VERIFY_SID)
+      .verificationChecks.create({
+        to: `+506${user.phone}`,
+        code,
+      });
+    if (result.status !== "approved") {return res.status(400).json({ message: "Codigo incorrecto o vencido." });}
+
+    //Code is valid, generate and return the JWT token
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.status(200).json({
+      message: "Login exitoso. Bienvenido a TicoCars.",
+      token,
+      username: user.username,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error del servidor." });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   validateCedula,
   activateAccount,
+  verify2FA,
 };
