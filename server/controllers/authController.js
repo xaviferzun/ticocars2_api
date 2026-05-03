@@ -311,9 +311,24 @@ const validateGoogleCedula = async (req, res) => {
       return res.status(400).json({message: "La cédula ingresada no existe en el padrón electoral."});
     }
 
-    //pendiente: actualizar el usuario con la cédula
-    //pentiende: activar la cuenta del usuaro
+    //Activate the account and save cedula and name data from padron
+    const user = await User.findById(userId);
+    user.cedula = cedula;
+    user.firstName = padronData.nombre || user.firstName;
+    user.lastName = `${padronData.apellidoPaterno || ""} ${padronData.apellidoMaterno || ""}`.trim() || user.lastName;
+    user.status = "active";
+    await user.save();
 
+    res.status(200).json({
+      message: "Cédula validada. Cuenta activada exitosamente.",
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+    });
 
   } catch (error) {
     console.error(error);
@@ -321,13 +336,11 @@ const validateGoogleCedula = async (req, res) => {
   }
 };
 
-
-
 module.exports = {
   registerUser,
   loginUser,
   validateCedula,
   activateAccount,
   verify2FA,
-  //validateGoogleCedula,
+  validateGoogleCedula,
 };
