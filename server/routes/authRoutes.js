@@ -19,6 +19,9 @@ router.post("/verify-2fa", verify2FA);
 //Route to start Google OAuth2 flow, requests email and profile data
 router.get("/google", passport.authenticate("google", { scope: ["email", "profile"], session: false }));
 
+//KAN-73 Route to validate cedula for Google users after OAuth registration
+router.post("/google-cedula", authenticate, validateGoogleCedula);
+
 //Callback route that Google redirects to after authentication
 router.get("/google/callback",
   passport.authenticate("google", { failureRedirect: "http://localhost:5173/login", session: false }),
