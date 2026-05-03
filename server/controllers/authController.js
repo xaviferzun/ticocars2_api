@@ -289,10 +289,35 @@ const verify2FA = async (req, res) => {
   }
 };
 
+//KAN-73 POST /api/auth/google-cedula endpoint to validte cedula for Google user
+const validateGoogleCedula = async (req, res) => {
+  try {
+    const { cedula } = req.body;
+
+    //Validate the  cedula format
+    if (!cedula || !/^\d{9}$/.test(cedula)) {
+      return res.status(400).json({message: "La cédula debe tener 9 dígitos."});
+    }
+    res.status(200).json({ message: "Formato de cédula válido." });
+
+    //pendiente: validar con el padron
+    //pendiente: actualizar el usuario con la cédula
+    //pentiende: activar la cuenta del usuaro
+
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error del servidor." });
+  }
+};
+
+
+
 module.exports = {
   registerUser,
   loginUser,
   validateCedula,
   activateAccount,
   verify2FA,
+  //validateGoogleCedula,
 };
