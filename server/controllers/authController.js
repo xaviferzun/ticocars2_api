@@ -289,10 +289,59 @@ const verify2FA = async (req, res) => {
   }
 };
 
+//KAN-73 POST /api/auth/google-cedula endpoint to validte cedula for Google user
+const validateGoogleCedula = async (req, res) => {
+  try {
+    const { cedula } = req.body;
+    const userId = req.user.id;
+    
+    //Validate the  cedula format
+    if (!cedula || !/^\d{9}$/.test(cedula)) {
+      return res.status(400).json({message: "La cédula debe tener 9 dígitos."});
+    }
+
+    //The cedula alredady exists
+    const existsCedula = await User.findOne({cedula, _id: {$ne: userId}});
+    if (existsCedula) {
+      return res.status(400).json({message: "Esa cédula ya está registrada en TicoCars."});
+    }
+
+    //Validate cedula on the padron API
+    const padronData = await checkCedula(cedula);
+    if (!padronData || padronData[0] === "No encontrado") {
+      return res.status(400).json({message: "La cédula ingresada no existe en el padrón electoral."});
+    }
+
+    //Activate the account and save cedula and name data from padron
+    const user = await User.findById(userId);
+    user.cedula = cedula;
+    user.firstName = padronData.nombre || user.firstName;
+    user.lastName = `${padronData.apellidoPaterno || ""} ${padronData.apellidoMaterno || ""}`.trim() || user.lastName;
+    user.status = "active";
+    await user.save();
+
+    res.status(200).json({
+      message: "Cédula validada. Cuenta activada exitosamente.",
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error del servidor." });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   validateCedula,
   activateAccount,
   verify2FA,
+  validateGoogleCedula,
 };

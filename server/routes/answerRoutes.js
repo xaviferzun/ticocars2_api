@@ -3,10 +3,10 @@ const router = express.Router();
 const Answer = require("../models/Answer");
 const Question = require("../models/Question");
 const Vehicle = require("../models/Vehicle");
-const authMiddleware = require("../middlewares/authMiddleware");
+const {authenticate} = require("../middlewares/authMiddleware");
 
 //KAN-37 Here I define the route for the POST endpoint to create a new answer related to a question. The user must be authenticated and must be the owner of the vehicle related to the question to answer it.
-router.post("/", authMiddleware, async (req, res) => {
+router.post("/", authenticate, async (req, res) => {
   try {
     const { questionId, text } = req.body;
 

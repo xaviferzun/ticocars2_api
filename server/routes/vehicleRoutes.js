@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Vehicle = require("../models/Vehicle");
-const authenticate = require("../middlewares/authMiddleware");
+const {authenticate} = require("../middlewares/authMiddleware");
 const ownerMiddleware = require("../middlewares/ownerMiddleware");
 const upload = require("../middlewares/uploadMiddleware"); //KAN-24 Image upload middleware
 
