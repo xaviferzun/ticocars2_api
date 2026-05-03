@@ -27,7 +27,7 @@ passport.use(
           firstName: profile.name.givenName,
           lastName: profile.name.familyName,
           authProvider: "google",
-          status: "active",
+          status: "pending", //KAN-73 Google user need verify email too
         });
 
         return done(null, newUser);
