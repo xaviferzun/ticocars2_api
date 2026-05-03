@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const {registerUser, loginUser, validateCedula, activateAccount, verify2FA} = require("../controllers/authController");
-const authenticate = require("../middlewares/authMiddleware");
+const {registerUser, loginUser, validateCedula, activateAccount, verify2FA, validateGoogleCedula} = require("../controllers/authController");
+const {authenticate, authenticateToken} = require("../middlewares/authMiddleware");
 const passport = require("../config/passportConfig");
 const jwt = require("jsonwebtoken");
 
@@ -20,7 +20,7 @@ router.post("/verify-2fa", verify2FA);
 router.get("/google", passport.authenticate("google", { scope: ["email", "profile"], session: false }));
 
 //KAN-73 Route to validate cedula for Google users after OAuth registration
-router.post("/google-cedula", authenticate, validateGoogleCedula);
+router.post("/google-cedula", authenticateToken, validateGoogleCedula);
 
 //Callback route that Google redirects to after authentication
 router.get("/google/callback",

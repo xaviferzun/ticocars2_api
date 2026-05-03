@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 const Question = require("../models/Question");
 const Answer = require("../models/Answer");
-const Vehicle = require("../models/Vehicle");
-const authenticate = require("../middlewares/authMiddleware");
+const Vehicle = require("../models/Vehicle");   
+const {authenticate} = require("../middlewares/authMiddleware");
 
 //KAN-35 Here I define the route for the POST endpoint to create a new question related to a vehicle.
 router.post("/", authenticate, async (req, res) => {

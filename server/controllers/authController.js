@@ -293,7 +293,8 @@ const verify2FA = async (req, res) => {
 const validateGoogleCedula = async (req, res) => {
   try {
     const { cedula } = req.body;
-
+    const userId = req.user.id;
+    
     //Validate the  cedula format
     if (!cedula || !/^\d{9}$/.test(cedula)) {
       return res.status(400).json({message: "La cédula debe tener 9 dígitos."});

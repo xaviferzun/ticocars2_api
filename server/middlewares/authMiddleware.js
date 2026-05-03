@@ -42,4 +42,34 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-module.exports = authenticate;
+//KAN-73 Middleware that only verifies JWT without checking account status
+const authenticateToken = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      return res.status(401).json({message: "Token no encontrado."});
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({message: "Formato de token inválido."});
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select("-password");
+
+    if (!user) {
+      return res.status(401).json({message: "Usuario no encontrado."});
+    }
+
+    req.user = user;
+    next();
+
+  } catch (error) {
+    return res.status(401).json({message: "Token inválido o vencido."});
+  }
+};
+
+module.exports = {authenticate, authenticateToken};
