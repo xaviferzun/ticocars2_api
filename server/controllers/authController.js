@@ -298,7 +298,13 @@ const validateGoogleCedula = async (req, res) => {
     if (!cedula || !/^\d{9}$/.test(cedula)) {
       return res.status(400).json({message: "La cédula debe tener 9 dígitos."});
     }
-    res.status(200).json({ message: "Formato de cédula válido." });
+    // res.status(200).json({ message: "Formato de cédula válido." });
+
+    //The cedula alredady exists
+    const existsCedula = await User.findOne({cedula, _id: {$ne: userId}});
+    if (existsCedula) {
+      return res.status(400).json({message: "Esa cédula ya está registrada en TicoCars."});
+    }
 
     //pendiente: validar con el padron
     //pendiente: actualizar el usuario con la cédula
