@@ -31,6 +31,11 @@ router.get("/google/callback",
       { expiresIn: "1h" }
     );
 
+    //KAN-73 If user is pending redirect to page for validte the cedula
+    if (req.user.status === "pending") {
+      return res.redirect(`http://localhost:5173/google-cedula?token=${token}`);
+    }
+
     res.redirect(`http://localhost:5173/google-callback?token=${token}`);
   }
 );
