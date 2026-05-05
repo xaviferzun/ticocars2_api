@@ -4,6 +4,7 @@ const Question = require("../models/Question");
 const Answer = require("../models/Answer");
 const Vehicle = require("../models/Vehicle");   
 const {authenticate} = require("../middlewares/authMiddleware");
+const {validateMessage} = require("../services/AIService");
 
 //KAN-35 Here I define the route for the POST endpoint to create a new question related to a vehicle.
 router.post("/", authenticate, async (req, res) => {
@@ -30,6 +31,12 @@ router.post("/", authenticate, async (req, res) => {
           message: "Debes esperar a que respondan tu pregunta anterior",
         });
       }
+    }
+
+    //KAN-71 Validate message for personal information
+    const isBlocked = await validateMessage(text);
+    if (isBlocked) {
+      return res.status(400).json({message: "El mensaje contiene información personal no permitida"});
     }
 
     //Create new question
