@@ -14,6 +14,7 @@ Programación en Ambiente Web ISW-711 Universidad Técnica Nacional Sede San Car
 
 ## Diagrama del proyecto
 Se adjunta el diagrama del proyecto en la carpeta /docs de ticocars2_api
+<img width="551" height="511" alt="TicoCars2_diagram drawio" src="https://github.com/user-attachments/assets/b767bc4b-c91d-4010-85fd-a73b99abedf8" />
 
 ## Servicios externos requeridos
 - Padrón Electoral corriendo en puerto 8080
